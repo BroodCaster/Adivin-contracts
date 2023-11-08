@@ -10,8 +10,8 @@ contract AdivinFactory is Ownable {
 
     event InheritancePlanCreated(address InheritancePlanner, address inheritanceAddress, uint256 cooldown);
 
-    function createNewInheritance(address _inheritancePlanner, address[] memory _beneficiaries, uint256 _cooldown, address[] memory _tokenAddress) public{
-        InheritancePlan inheritance = new InheritancePlan(_inheritancePlanner, _beneficiaries, _cooldown, _tokenAddress);
+    function createNewInheritance(address _inheritancePlanner, address[] memory _beneficiaries, uint256[] memory _percentages, uint256 _cooldown, address[] memory _tokenAddress) public{
+        InheritancePlan inheritance = new InheritancePlan(_inheritancePlanner, _beneficiaries, _percentages, _cooldown, _tokenAddress);
         InheritanceArray.push(inheritance);
         emit InheritancePlanCreated(_inheritancePlanner, address(inheritance), _cooldown);
     }

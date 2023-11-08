@@ -10,9 +10,7 @@ contract InheritancePlan{
 
     uint256 public cooldown;
     uint256 public start;
-
-    // uint256 public inheritanceAmount = 0;
-    // uint256 public inheritanceAmountTokens = 0;
+    uint256[] public percentages;
 
     bool claimStarted = false;
 
@@ -21,12 +19,16 @@ contract InheritancePlan{
     event StartClaim(uint256 start);
     event Claim(address beneficiaries, uint256 amount);
 
-    constructor(address _inheritancePlanner, address[] memory _beneficiaries, uint256 _cooldown, address[] memory tokenAddress){
+    constructor(address _inheritancePlanner, address[] memory _beneficiaries, uint256[] memory _percentages, uint256 _cooldown, address[] memory tokenAddress){
         owner = _inheritancePlanner;
         factoryAddress = msg.sender;
         for(uint16 i = 0; i < _beneficiaries.length; i++)
         {
             beneficiaries.push(_beneficiaries[i]);
+        }
+        for(uint16 i = 0; i < _percentages.length; i++)
+        {
+            percentages.push(_percentages[i]);
         }
         cooldown = _cooldown;
         for(uint16 i = 0; i < tokenAddress.length; i++)
@@ -55,23 +57,16 @@ contract InheritancePlan{
         {
             IERC20 token = IERC20(ERC20Addresses[i]);
             uint256 balance = token.balanceOf(owner);
-            uint256 beneficiariesAmount = beneficiaries.length;
-            uint256 tokenAmount = balance/beneficiariesAmount;
-            require(token.allowance(owner, address(this)) >= tokenAmount, "Approve your tokens!");
-            for(uint16 i = 0; i < beneficiaries.length; i++){
-                require(token.transferFrom(owner, beneficiaries[i], tokenAmount), "Token transfer to InheritancePlan failed");
+            require(token.allowance(owner, address(this)) >= balance, "Approve your tokens!");
+            for(uint16 k = 0; k < beneficiaries.length; k++){
+                uint256 tokenAmount = (balance*percentages[k])/100;
+                require(token.transferFrom(owner, beneficiaries[k], tokenAmount), "Token transfer to InheritancePlan failed");
             }
         }
-        
-            // (bool os, ) = payable(beneficiaries).call{value: address(this).balance}("");
-            // require(os);
-            // if(token.balanceOf(address(this)) > 0){
-            //     require(token.transfer(beneficiaries, inheritanceAmountTokens), "Token transfer to Beneficiary failed");
-            // }
 
     }
 
-    function startClaim() external payable onlyBeneficiary{
+    function startClaim() external onlyBeneficiary{
         start = block.timestamp;
         claimStarted = true;
         emit StartClaim(start);
