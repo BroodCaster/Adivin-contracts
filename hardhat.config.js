@@ -5,7 +5,6 @@ require("dotenv").config();
 
 
 module.exports = {
-  defaultNetwork: "mumbai",
   networks: {
     hardhat: {
     },

@@ -20,8 +20,6 @@ contract Escrow is Ownable {
 
     bool public isPaused;
 
-    uint256 public fee;
-
     mapping(uint256 => EscrowInfo) public escrowInfos;
 
     uint256 public counter = 0;
@@ -61,9 +59,7 @@ contract Escrow is Ownable {
         _;
     }
 
-    constructor(uint256 _fee) {
-        fee = _fee;
-    }
+    constructor() {}
 
     function createEscrow(
         address buyer,
@@ -75,13 +71,15 @@ contract Escrow is Ownable {
     ) public payable notPaused {
         require(buyer != address(0), "createEscrow: buyer zero address");
         require(seller != address(0), "createEscrow: seller zero address");
-        require(token != address(0) && !isNative, "createEscrow: token zero address");
+        require(token != address(0) || !isNative, "createEscrow: token zero address");
         require(!isNative && amount > 0 || isNative && msg.value > 0, "createEscrow: amount > 0");
         require(cooldown > 0, "createEscrow: cooldown > 0");
 
         IERC20(token).safeTransferFrom(buyer, address(this), amount);
 
         uint256 escrowId = counter;
+
+        amount = isNative ? msg.value : amount;
 
         escrowInfos[escrowId] = EscrowInfo(
             buyer,
