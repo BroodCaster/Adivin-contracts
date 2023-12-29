@@ -19,6 +19,7 @@ contract Escrow is Ownable {
     }
 
     bool public isPaused;
+    mapping(address => uint256[]) public userEscrows;
 
     mapping(uint256 => EscrowInfo) public escrowInfos;
 
@@ -91,6 +92,8 @@ contract Escrow is Ownable {
             false
         );
 
+        userEscrows[buyer].push(escrowId);
+
         counter++;
 
         emit EscrowCreated(escrowId, buyer, seller, token, amount, cooldown, isNative);
@@ -111,6 +114,10 @@ contract Escrow is Ownable {
         escrowInfo.isReleased = true;
 
         emit EscrowReleased(escrowId);
+    }
+
+    function getUserEscrows(address escrowOwner) public view returns(uint256[] memory){
+        return userEscrows[escrowOwner];
     }
 
     function pause() public onlyOwner {
