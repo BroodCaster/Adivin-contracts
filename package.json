@@ -4,7 +4,8 @@
   "description": "",
   "main": "index.js",
   "scripts": {
-    "test": "hardhat test"
+    "test": "hardhat test",
+    "deploy": "npx hardhat run --network mumbai scripts/deploy.js"
   },
   "author": "Antony from HowSimpl",
   "license": "ISC",
