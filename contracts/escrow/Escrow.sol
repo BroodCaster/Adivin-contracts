@@ -9,6 +9,7 @@ contract Escrow is Ownable {
     using SafeERC20 for IERC20;
 
     struct EscrowInfo {
+        uint256 id;
         address buyer;
         address seller;
         address token;
@@ -88,6 +89,7 @@ contract Escrow is Ownable {
             amount = isNative ? msg.value : amount;
 
             escrowInfos[escrowId] = EscrowInfo(
+                escrowId,
                 buyer,
                 seller,
                 token,
@@ -102,6 +104,7 @@ contract Escrow is Ownable {
             amount = isNative ? msg.value : amount;
 
             escrowInfos[escrowId] = EscrowInfo(
+                escrowId,
                 buyer,
                 seller,
                 token,
