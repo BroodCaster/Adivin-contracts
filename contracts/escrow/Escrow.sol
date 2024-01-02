@@ -16,6 +16,7 @@ contract Escrow is Ownable {
         uint256 cooldown;
         bool isNative;
         bool isReleased;
+        bool isCancelled;
     }
 
     bool public isPaused;
@@ -35,6 +36,8 @@ contract Escrow is Ownable {
     );
 
     event EscrowReleased(uint256 tokenId);
+
+    event EscrowCancelled(uint256 tokenId);
 
     modifier onlyEscrowOwner(uint256 escrowId) {
         EscrowInfo memory escrowInfo = escrowInfos[escrowId];
@@ -88,12 +91,32 @@ contract Escrow is Ownable {
             amount,
             block.timestamp + cooldown,
             isNative,
+            false,
             false
         );
 
         counter++;
 
         emit EscrowCreated(escrowId, buyer, seller, token, amount, cooldown, isNative);
+    }
+
+    function cancelEscrow(
+        uint256 escrowId
+    ) public notPaused {
+        EscrowInfo storage escrowInfo = escrowInfos[escrowId];
+
+        require(msg.sender == escrowInfo.buyer || msg.sender == escrowInfo.seller);
+
+        if (escrowInfo.isNative) {
+            (bool success, ) = escrowInfo.buyer.call{value: escrowInfo.amount}("");
+            require(success, "Transfer failed");
+        } else {
+            IERC20(escrowInfo.token).safeTransfer(escrowInfo.buyer, escrowInfo.amount);
+        }
+
+        escrowInfo.isCancelled = true;
+
+        emit EscrowCancelled(escrowId);
     }
 
     function releaseEscrow(
