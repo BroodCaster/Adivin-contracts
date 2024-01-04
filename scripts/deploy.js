@@ -10,11 +10,23 @@ async function main() {
 
   await contract.waitForDeployment();
   const address = await contract.getAddress();
-  console.log("Contract address: ", address);
+  console.log("AdivinFactory contract address: ", address);
+
+  const EscrowContract = await hre.ethers.getContractFactory("Escrow");
+  const escrowContract = await EscrowContract.deploy();
+
+  await escrowContract.waitForDeployment();
+  const escrowAddress = await escrowContract.getAddress();
+  console.log("Escrow contract address: ", escrowAddress);
 
   await hre.run("verify:verify", {
     address: address,
-    constructorArguments: [""]
+    constructorArguments: []
+  });
+
+  await hre.run("verify:verify", {
+    address: escrowAddress,
+    constructorArguments: []
   });
 }
 

@@ -9,6 +9,7 @@ contract Escrow is Ownable {
     using SafeERC20 for IERC20;
 
     struct EscrowInfo {
+        uint256 id;
         address buyer;
         address seller;
         address token;
@@ -75,27 +76,48 @@ contract Escrow is Ownable {
     ) public payable notPaused {
         require(buyer != address(0), "createEscrow: buyer zero address");
         require(seller != address(0), "createEscrow: seller zero address");
-        require(token != address(0) || !isNative, "createEscrow: token zero address");
+        if(isNative){
+             require(token == address(0), "createEscrow: token should be zero address");
+        }else{
+             require(token != address(0), "createEscrow: token zero address");
+        }
+       
         require(!isNative && amount > 0 || isNative && msg.value > 0, "createEscrow: amount > 0");
         require(cooldown > 0, "createEscrow: cooldown > 0");
 
-        IERC20(token).safeTransferFrom(buyer, address(this), amount);
-
         uint256 escrowId = counter;
 
-        amount = isNative ? msg.value : amount;
+        if(isNative)
+        {
+            amount = isNative ? msg.value : amount;
 
-        escrowInfos[escrowId] = EscrowInfo(
-            buyer,
-            seller,
-            token,
-            amount,
-            block.timestamp + cooldown,
-            isNative,
-            false,
-            false
-        );
+            escrowInfos[escrowId] = EscrowInfo(
+                escrowId,
+                buyer,
+                seller,
+                token,
+                amount,
+                block.timestamp + cooldown,
+                isNative,
+                false
+            );
+        } else {
+            IERC20(token).safeTransferFrom(buyer, address(this), amount);
 
+            amount = isNative ? msg.value : amount;
+
+            escrowInfos[escrowId] = EscrowInfo(
+                escrowId,
+                buyer,
+                seller,
+                token,
+                amount,
+                block.timestamp + cooldown,
+                isNative,
+                false
+            );
+        }
+        
         userEscrows[buyer].push(escrowId);
 
         counter++;
