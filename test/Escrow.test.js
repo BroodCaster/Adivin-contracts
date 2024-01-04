@@ -115,4 +115,110 @@ describe('Escrow', function () {
 
         expect(sellerBalance).to.equal(10001000000000000000000n)
     })
+
+    it('should allow buyer to cancel escrow with ERC20 token', async () => {
+        await token.connect(buyer).approve(escrow.target, ethers.parseEther('1'))
+
+        await escrow.createEscrow(
+            buyer.address,
+            seller.address,
+            token.target,
+            ethers.parseEther('1'),
+            100,
+            false
+        )
+
+        await increaseTime(10)
+
+        let buyerBalance = await token.balanceOf(buyer.address)
+
+        expect(buyerBalance).to.equal(ethers.parseEther('9'))
+
+        await escrow.connect(buyer).cancelEscrow(0)
+
+        buyerBalance = await token.balanceOf(buyer.address)
+
+        expect(buyerBalance).to.equal(ethers.parseEther('10'))
+    })
+
+    it('should allow seller to cancel escrow with ERC20 token', async () => {
+        await token.connect(buyer).approve(escrow.target, ethers.parseEther('1'))
+
+        await escrow.createEscrow(
+            buyer.address,
+            seller.address,
+            token.target,
+            ethers.parseEther('1'),
+            100,
+            false
+        )
+
+        await increaseTime(10)
+
+        let buyerBalance = await token.balanceOf(buyer.address)
+
+        expect(buyerBalance).to.equal(ethers.parseEther('9'))
+
+        await escrow.connect(seller).cancelEscrow(0)
+
+        buyerBalance = await token.balanceOf(buyer.address)
+
+        expect(buyerBalance).to.equal(ethers.parseEther('10'))
+    })
+
+    it('should allow buyer to cancel escrow with native token', async () => {
+        await token.connect(buyer).approve(escrow.target, ethers.parseEther('1'))
+
+        await escrow.createEscrow(
+            buyer.address,
+            seller.address,
+            token.target,
+            ethers.parseEther('1'),
+            100,
+            true,
+            {
+                value: ethers.parseEther('1')
+            }
+        )
+
+        await increaseTime(10)
+
+        let buyerBalance = await buyer.provider.getBalance(buyer.address)
+
+        expect(buyerBalance).to.equal(9999999433221398065155n)
+
+        await escrow.connect(buyer).cancelEscrow(0)
+
+        buyerBalance = await buyer.provider.getBalance(buyer.address)
+
+        expect(buyerBalance).to.equal(10000999391862236678021n)
+    })
+
+    it('should allow seller to cancel escrow with native token', async () => {
+        await token.connect(buyer).approve(escrow.target, ethers.parseEther('1'))
+
+        await escrow.createEscrow(
+            buyer.address,
+            seller.address,
+            token.target,
+            ethers.parseEther('1'),
+            100,
+            true,
+            {
+                value: ethers.parseEther('1')
+            }
+        )
+
+        await increaseTime(10)
+
+        let buyerBalance = await buyer.provider.getBalance(buyer.address)
+
+        expect(buyerBalance).to.equal(10000999345500731268289n)
+
+        await escrow.connect(seller).cancelEscrow(0)
+
+        buyerBalance = await buyer.provider.getBalance(buyer.address)
+
+        expect(buyerBalance).to.equal(10001999345500731268289n)
+    })
 })
