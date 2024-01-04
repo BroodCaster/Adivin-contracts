@@ -99,6 +99,7 @@ contract Escrow is Ownable {
                 amount,
                 block.timestamp + cooldown,
                 isNative,
+                false,
                 false
             );
         } else {
@@ -114,6 +115,7 @@ contract Escrow is Ownable {
                 amount,
                 block.timestamp + cooldown,
                 isNative,
+                false,
                 false
             );
         }
